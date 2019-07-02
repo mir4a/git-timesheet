@@ -51,5 +51,5 @@ else
     days[day] << timestamp.strftime("%H:%M ") + line.strip
     days
   }.sort{|a,b| a[0]<=>b[0]}
-  puts day_entries.map{|day, entries| "#{day}\n#{'='*10}\n\n#{entries.sort.join("\n")}\n\n"}
+  puts day_entries.map{|day, entries| "\n#{day}:\n#{entries.sort.join("\n")}\n\n#{'___'*10}\n"}
 end
