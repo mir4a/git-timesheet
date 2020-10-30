@@ -39,17 +39,19 @@ else
 end
 
 if options[:authors]
-  authors = `#{@command} --no-merges --simplify-merges --format="%an (%ae)" --since="#{options[:since].gsub('"','\\"')}"`.strip.split("\n").uniq
+  authors = `#{@command} --no-merges --simplify-merges --format="%an %b%n(%ae)*****" --since="#{options[:since].gsub('"','\\"')}"`.strip.split("*****").uniq
   puts authors.join("\n")
 else
   options[:author] ||= `git config --get user.email`.strip
-  log_lines = `#{@command} --no-merges --simplify-merges --author="#{options[:author].gsub('"','\\"')}" --format="%ad %s <%h>" --date=iso --since="#{options[:since].gsub('"','\\"')}"`.split("\n")
-  day_entries = log_lines.inject({}) {|days, line|
-    timestamp = Time.parse line.slice!(0,25)
+  log_lines = `#{@command} --no-merges --simplify-merges --author="#{options[:author].gsub('"','\\"')}" --format="%ad %s%n%b<%h>*****" --date=iso --since="#{options[:since].gsub('"','\\"')}"`.split("*****")
+  filtered = log_lines.select {|line| !line.eql?("\n")}
+  day_entries = filtered.inject({}) {|days, line|
+    sliced = line.slice!(0,26).strip
+    timestamp = Time.parse sliced
     day = timestamp.strftime("%Y-%m-%d")
     days[day] ||= []
     days[day] << timestamp.strftime("%H:%M ") + line.strip
     days
   }.sort{|a,b| a[0]<=>b[0]}
-  puts day_entries.map{|day, entries| "#{day}\n#{'='*10}\n\n#{entries.sort.join("\n")}\n\n"}
+  puts day_entries.map{|day, entries| "\n#{day}:\n#{entries.sort.join("\n")}\n\n#{'___'*10}\n"}
 end
